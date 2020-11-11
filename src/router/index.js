@@ -1,14 +1,20 @@
 import Vue from 'vue';
 import VueRouter from 'vue-router';
 import Home from '../views/Home.vue';
+import Thingiverse from '../views/Thingiverse.vue';
 
 Vue.use(VueRouter);
 
 const routes = [
   {
-    path: '/:id',
+    path: '/',
     name: 'Home',
     component: Home,
+  },
+  {
+    path: '/thingiverse/:id',
+    name: 'Thingiverse',
+    component: Thingiverse,
   },
 ];
 

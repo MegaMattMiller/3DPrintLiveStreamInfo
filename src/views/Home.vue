@@ -1,82 +1,59 @@
 <template>
-  <div class="home" v-if="!loading">
-    <div>Name = {{ thingData.name }}</div>
-    <img :src="thingImageUrl" width="500" height="auto" />
-    <qrcode-vue :value="qrUrl"></qrcode-vue>
-  </div>
+  <b-container>
+    <b-form @submit="onSubmit" @reset="onReset" v-if="show">
+      <b-form-group
+        label-cols="4"
+        label-cols-lg="2"
+        label-size="sm"
+        label="Thing ID:"
+        label-for="thing-id"
+      >
+        <b-form-input
+          id="thing-id"
+          size="sm"
+          v-model="form.thingId"
+          type="number"
+        ></b-form-input>
+      </b-form-group>
+      <b-button type="submit" variant="primary">Submit</b-button>
+      <b-button type="reset" variant="danger">Reset</b-button>
+    </b-form>
+  </b-container>
 </template>
 
 <script>
-const axios = require('axios').default;
-import QrcodeVue from 'qrcode.vue';
-// @ is an alias to /src
-
 export default {
   name: 'Home',
-  components: {
-    QrcodeVue,
-  },
   data() {
     return {
-      loading: false,
-      thingData: undefined,
-      thingImageUrl: '',
-      qrUrl: '',
-      error: null,
+      show: true,
+      form: {
+        thingId: '',
+      },
     };
   },
-  created() {
-    // fetch the data when the view is created and the data is
-    // already being observed
-    this.fetchData();
-  },
-  watch: {
-    // call again the method if the route changes
-    $route: 'fetchData',
-  },
   methods: {
-    async fetchData() {
-      this.error = this.post = null;
-      this.loading = true;
-      console.log(process.env.VUE_APP_APP_TOKEN);
-      const thingId = this.$route.params.id;
-      this.loading = true;
-      this.thingData = await this.getThing(thingId);
-      var thingImages = await this.getImagePaths(this.thingData.images_url);
-      this.thingImageUrl = this.getPreviewImage(thingImages[0]);
-      this.qrUrl = this.thingData.public_url;
-      this.loading = false;
-      console.log(this.thingData);
-      console.log(this.thingData.public_url);
-    },
-    async getThing(thingId) {
-      try {
-        const response = await axios.get(
-          `https://api.thingiverse.com/things/${thingId}?access_token=${process.env.VUE_APP_APP_TOKEN}`
-        );
-        return response.data;
-      } catch (error) {
-        console.error(error);
-        return undefined;
+    onSubmit(evt) {
+      evt.preventDefault();
+      if (this.form.thingId > 0 && this.form.thingId != '') {
+        this.$router.push({
+          name: 'Thingiverse',
+          params: { id: this.form.thingId },
+        });
       }
     },
-    async getImagePaths(thingImageUrl) {
-      try {
-        const response = await axios.get(
-          `${thingImageUrl}?access_token=${process.env.VUE_APP_APP_TOKEN}`
-        );
-        return response.data;
-      } catch (error) {
-        console.error(error);
-        return undefined;
-      }
-    },
-    getPreviewImage(thingImageData) {
-      const found = thingImageData.sizes.find(
-        (element) => element.size == 'featured'
-      );
-      return found.url;
+    onReset(evt) {
+      evt.preventDefault();
+      // Reset our form values
+      this.form.thingId = '';
+      // Trick to reset/clear native browser form validation state
+      this.show = false;
+      this.$nextTick(() => {
+        this.show = true;
+      });
     },
   },
 };
 </script>
+
+<style lang="scss" scoped></style>
